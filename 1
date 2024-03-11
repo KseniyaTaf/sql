@@ -1,0 +1,92 @@
+--1. Найти страну с максимальной капитализацией всех её производителей.
+SELECT  sum(capitalization), countries.name AS страна
+FROM manufacturers JOIN countries
+ON manufacturers.country_id = countries.id
+--WHERE capitalization = (SELECT max(capitalization)
+                       -- FROM manufacturers)
+GROUP BY countries.name
+order by SUM(manufacturers.capitalization) desc
+limit 1
+
+    select SUM(manufacturers.capitalization) as summa, countries.name as country
+    from manufacturers join countries
+        on manufacturers.country_id = countries.id
+        group by countries.name
+   order by summa desc limit 1
+--2. Вывести всю доступную информацию о моделе: имя производителя, имя модели, цена, остаток, страна
+-- производства.
+SELECT manufacturers.name AS производитель, models.name AS модель, prices.value AS цена,
+       quantity.count AS остаток, countries.name AS страна_производства
+FROM manufacturers join models
+ON manufacturers.id = models.manufacturer_id
+JOIN prices
+ON models.price_id = prices.id
+JOIN  quantity
+ON models.id = quantity.model_id
+JOIN countries
+ON manufacturers.country_id = countries.id
+
+--3. Вывести все автомобили и их продавцов,которыми занимаются сотрудники офиса ‘Laconia’.
+SELECT models.name AS модель, sellers.first_name AS имя, sellers.last_name AS фамилия
+FROM models join sellers
+ON models.seller_id = sellers.id
+JOIN offices
+ON sellers.office_id = offices.id
+WHERE offices.name = 'Laconia'
+
+--4. Найти марку с наибольшим количеством автомобилей в системе.
+SELECT manufacturers.name AS марка_автомобиля, quantity.count AS количество_автомобилей
+FROM manufacturers join models
+ON manufacturers.id = models.manufacturer_id
+JOIN quantity
+ON models.id = quantity.model_id
+WHERE quantity.count = (SELECT max(quantity.count)
+                                   FROM quantity);
+
+--5. Найти все модели, что может купить потребитель.
+SELECT models.name AS модель
+FROM models
+WHERE instock = true;
+
+--6. Вывести среднее значение цены всех доступных к продаже автомобилей.
+SELECT avg(prices.value)
+FROM models JOIN prices
+ON models.price_id = prices.id
+WHERE public.models.instock = true;
+
+--7. Вывести общую стоимость всех автомобилей марки ‘Horch’.
+SELECT sum(prices.value * quantity.count)
+FROM prices join models
+ON prices.id = models.price_id
+JOIN manufacturers
+ON models.manufacturer_id = manufacturers.id
+JOIN quantity
+ON models.id = quantity.model_id and models.id = quantity.model_id
+WHERE manufacturers.name = 'Horch';
+
+--8. Вывести все уникальные модели производителя ‘KAA’ и среднюю цену на них.
+SELECT models.name AS модель, avg(prices.value)
+FROM models JOIN prices
+ON models.price_id = prices.id
+JOIN manufacturers
+ON models.manufacturer_id = manufacturers.id
+WHERE manufacturers.name = 'KAA'
+GROUP BY models.name;
+
+--9. Вывести все автомобили в наличии, произведенные в регионе ‘Asia’.
+SELECT models.name AS модель
+FROM models JOIN manufacturers
+ON models.manufacturer_id = manufacturers.id
+JOIN countries
+ON manufacturers.country_id = countries.id
+JOIN regions
+ON countries.region_id = regions.id
+WHERE instock = true
+and regions.name = 'Asia';
+
+--10. Вывести все модели, которые продаёт самый востребованный продавец.
+SELECT models.name AS модель
+FROM models JOIN manufacturers
+ON models.manufacturer_id = manufacturers.id
+WHERE capitalization = (SELECT max(capitalization)
+                        FROM manufacturers);
